@@ -20,9 +20,12 @@ const UsernameComponent = () => {
             setErrorText("Invalid Lobby Id");
             return;
           }
-          socket.once("player-joined", roomInfo => {
-            setMatch(roomInfo);
-            console.log(roomInfo);
+          socket.once("player-joined", ({hostUsn, opponentUsn}) => {
+            setMatch({
+                hostName : hostUsn,
+                oppName : opponentUsn,
+            });
+            console.log(hostUsn, opponentUsn);
           })
     
           console.log(cb);
@@ -31,9 +34,13 @@ const UsernameComponent = () => {
       }
     
       const joinLobby = (e) => {
-        socket.emit("join-room", inputValue, cb => {
-          if(cb != false){
-            setMatch(cb);
+        socket.emit("join-room", inputValue, (values) => {
+          if(values != false){
+            let {hostUsn, opponentUsn} = values;
+            setMatch({
+                hostName : hostUsn,
+                oppName : opponentUsn,
+            });
           }
         })
       }
@@ -43,11 +50,12 @@ const UsernameComponent = () => {
 
         }
 
-        socket.once("game-start", function ( deckPlay ) {
+        socket.on("game-start", deck => {
             setGameStart(true);
-            setDeck(deckPlay);
-            console.log(deckPlay)
+            setDeck(deck);
+            console.log(deck);
             console.log("start her up");
+            console.log(socket);
         })
 
         socket.on("wrong-card-id", deck => {
@@ -85,10 +93,10 @@ const UsernameComponent = () => {
       
         <div className='flex flex-col justify-center items-center h-screen w-h/12 mr-auto'>
             <div className=''>
-                {match.opponent.username}
+                {match.oppName}
             </div>
             <div>
-                {match.host.username}
+                {match.hostName}
             </div>
             <button onClick={readyUp}>Ready?</button>
             
