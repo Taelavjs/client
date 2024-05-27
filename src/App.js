@@ -1,24 +1,44 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react';
+import UsernameComponent from './components/usernameComponent';
+import MatchMaking from './components/matchMaking';
+import socket from './socket';
+
 
 function App() {
+  const [sessionID, setSessionId] = useState(sessionStorage.getItem("sessionId"));
+  const [userID, setUserID] = useState(sessionStorage.getItem("userID"));
+  const [room, setRoom] = useState('');
+
+  
+  useEffect(() => {
+    if (sessionID) {
+      socket.auth = { sessionID };
+      socket.connect();
+      console.log(socket);
+    }
+
+
+  }, []);
+
+  socket.on('connect', function () {
+    console.log(socket);
+  });
+  socket.on('session', ({sessionID, userID, username})=> {
+    sessionStorage.setItem("sessionId", sessionID);
+    sessionStorage.setItem("userID", userID);
+    setSessionId(parseInt(sessionID)); // Parse to integer
+    setUserID(parseInt(userID)); // Parse to integer
+  });
+
+
+
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {userID == null && sessionID == null && <UsernameComponent sessionId={sessionID} setSessionId={setSessionId} userID={userID} setUserID={setUserID} />}
+      {<MatchMaking />}
+
+    </>
   );
 }
 
